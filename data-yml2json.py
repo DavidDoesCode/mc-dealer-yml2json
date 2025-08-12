@@ -276,7 +276,7 @@ if __name__ == "__main__":
                         player_offers[item_index] = player_offer
 
                     # Demands of the dealer
-                    elif offer_data["mode"] == "BUY" or offer_data["mode"] == "BUY_AND_SELL":
+                    if offer_data["mode"] == "BUY" or offer_data["mode"] == "BUY_AND_SELL":
                         player_demand = {}
 
                         try:
