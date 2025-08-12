@@ -142,7 +142,7 @@ if __name__ == "__main__":
                 for offer in result_dict[shop]["items_for_sale"]:
                     offer_data = result_dict[shop]["items_for_sale"][offer]
                     # Offers of the dealer
-                    if offer_data["mode"] == "SELL":
+                    if offer_data["mode"] == "SELL" or offer_data["mode"] == "BUY_AND_SELL":
                         player_offer = {}
                         player_offer["own_name"] = None
                         try:
@@ -273,7 +273,7 @@ if __name__ == "__main__":
                         player_offers[item_index] = player_offer
 
                     # Demands of the dealer
-                    elif offer_data["mode"] == "BUY":
+                    elif offer_data["mode"] == "BUY" or offer_data["mode"] == "BUY_AND_SELL":
                         player_demand = {}
 
                         try:
