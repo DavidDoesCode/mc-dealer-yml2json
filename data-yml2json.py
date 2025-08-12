@@ -57,12 +57,12 @@ def read_uuids_from_file(file_path):
 
 def decode_nbt_data(base64_string):
     decoded_bytes = base64.b64decode(base64_string)
-    
+
     with tempfile.NamedTemporaryFile(delete=False) as temp_file:
         temp_file.write(decoded_bytes)
         temp_file.seek(0)
         nbt_data = nbtlib.load(temp_file.name)
-    
+
     return nbt_data
 
 def read_yaml_files(directory):
@@ -89,7 +89,7 @@ def read_yaml_files(directory):
     return data_dict
 
 # Specify the directory with the YAML files
-DIRECTORY_PATH = "data/"
+DIRECTORY_PATH = "data/Shops"
 HIDDEN_SHOPS = read_uuids_from_file("hidden_shops.json")
 result_dict = read_yaml_files(DIRECTORY_PATH)
 
@@ -103,6 +103,7 @@ if __name__ == "__main__":
             if result_dict[shop]["shop_uuid"] in HIDDEN_SHOPS:
                 continue
             player_shop = {}
+            print("Found: " + shop)
 
             # Meta data of the shop
             player_shop["shop_uuid"] = result_dict[shop]["shop_uuid"]
@@ -114,6 +115,9 @@ if __name__ == "__main__":
 
             if "ownerName" in result_dict[shop]:
                 player_shop["owner_name"] = result_dict[shop]["ownerName"]
+
+            if "entity" not in result_dict[shop]:
+                continue
 
             player_shop["shop_name"] = clean_minecraft_string(
                 result_dict[shop]["entity"]["name"]
@@ -224,8 +228,8 @@ if __name__ == "__main__":
                             if "ItemFlags" in offer_data["item"]["meta"] and "HIDE_ARMOR_TRIM" in offer_data["item"]["meta"]["ItemFlags"] and "internal" in offer_data["item"]["meta"]:
                                 internal_data = decode_nbt_data(offer_data["item"]["meta"]["internal"])
 
-                                if ("BlockEntityTag" in internal_data 
-                                    and "Items" in internal_data["BlockEntityTag"] 
+                                if ("BlockEntityTag" in internal_data
+                                    and "Items" in internal_data["BlockEntityTag"]
                                     and len(internal_data["BlockEntityTag"]["Items"]) > 0
                                     and "tag" in internal_data["BlockEntityTag"]["Items"][0]
                                     and "simpledrawer" in internal_data["BlockEntityTag"]["Items"][0]["tag"]
@@ -244,7 +248,7 @@ if __name__ == "__main__":
                                             simpledrawer_data["wood_type"] = simpledrawer_data["wood_type"][13:]
 
                                     player_offer["simpledrawer"] = simpledrawer_data
-                                    
+
 
 
                         if (
