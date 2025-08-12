@@ -145,7 +145,12 @@ if __name__ == "__main__":
                     if offer_data["mode"] == "SELL":
                         player_offer = {}
                         player_offer["own_name"] = None
-                        item_type = offer_data["item"]["type"]
+                        try:
+                            item_type = offer_data["item"]["type"]
+                        except:
+                            print("Error for " + offer_data["item"]["id"])
+                            continue
+
                         item_index = item_type
 
                         if item_type == "POTION":
@@ -271,7 +276,11 @@ if __name__ == "__main__":
                     elif offer_data["mode"] == "BUY":
                         player_demand = {}
 
-                        item_type = offer_data["item"]["type"]
+                        try:
+                            item_type = offer_data["item"]["type"]
+                        except:
+                            continue
+
                         player_demand["item"] = item_type.replace("minecraft:", "", 1)
                         player_demand["own_name"] = None
                         player_demand["amount"] = offer_data["amount"]
@@ -308,8 +317,12 @@ if __name__ == "__main__":
             player_stocks = {}
             if "storage" in result_dict[shop]:
                 for stock in result_dict[shop]["storage"]:
-                    item_type = stock["type"]
-                    item_index = stock["type"]
+
+                    try:
+                        item_type = stock["type"]
+                        item_index = stock["type"]
+                    except:
+                        continue
 
                     if item_type == "POTION":
                         if "potion-type" in stock["meta"]:
