@@ -329,7 +329,12 @@ if __name__ == "__main__":
                         item_type = stock["type"]
                         item_index = stock["type"]
                     except:
-                        continue
+                        try:
+                            item_type = stock["id"]
+                            item_index = stock["id"]
+                        except:
+                            print("Error parsing stock type")
+                            continue
 
                     if item_type == "POTION":
                         if "potion-type" in stock["meta"]:
