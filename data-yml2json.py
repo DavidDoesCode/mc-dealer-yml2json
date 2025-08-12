@@ -148,8 +148,11 @@ if __name__ == "__main__":
                         try:
                             item_type = offer_data["item"]["type"]
                         except:
-                            print("Error for " + offer_data["item"]["id"])
-                            continue
+                            try:
+                                item_type = offer_data["item"]["id"]
+                            except:
+                                print("Error for " + offer_data["item"]["id"])
+                                continue
 
                         item_index = item_type
 
@@ -279,7 +282,11 @@ if __name__ == "__main__":
                         try:
                             item_type = offer_data["item"]["type"]
                         except:
-                            continue
+                            try:
+                                item_type = offer_data["item"]["id"]
+                            except:
+                                print("Error for " + offer_data["item"]["id"])
+                                continue
 
                         player_demand["item"] = item_type.replace("minecraft:", "", 1)
                         player_demand["own_name"] = None
