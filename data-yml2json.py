@@ -422,14 +422,18 @@ if __name__ == "__main__":
                     shop["offers"][offer_key]["is_best_price"] = False
 
             for demand_key in shop["demands"]:
-                best_demands_key = shop["demands"][demand_key]["item"]
-                if (
-                    shop["demands"][best_demands_key]["unit_price"]
-                    == BEST_DEMANDS[best_demands_key]
-                ):
-                    shop["demands"][best_demands_key]["is_best_price"] = True
-                else:
-                    shop["demands"][best_demands_key]["is_best_price"] = False
+                try:
+                    best_demands_key = shop["demands"][demand_key]["item"]
+                    if (
+                        shop["demands"][best_demands_key]["unit_price"]
+                        == BEST_DEMANDS[best_demands_key]
+                    ):
+                        shop["demands"][best_demands_key]["is_best_price"] = True
+                    else:
+                        shop["demands"][best_demands_key]["is_best_price"] = False
+                except:
+                    print("Error: ")
+                    continue
 
         # Data output as JSON file
         with open("web/output.json", "w") as outfile:
