@@ -146,30 +146,39 @@ if __name__ == "__main__":
                         player_offer = {}
                         player_offer["own_name"] = None
                         try:
-                            item_type = offer_data["item"]["type"]
+                            item_type = offer_data["item"]["type"].lower().replace("minecraft:", "", 1)
                         except:
                             try:
-                                item_type = offer_data["item"]["id"]
+                                item_type = offer_data["item"]["id"].lower().replace("minecraft:", "", 1)
                             except:
                                 print("Error for " + offer_data["item"]["id"])
                                 continue
 
                         item_index = item_type
 
-                        if item_type == "POTION":
-                            if "potion-type" in offer_data["item"]["meta"]:
-                                item_type = offer_data["item"]["meta"]["potion-type"]
+                        if item_type == "potion":
+                            if "meta" in offer_data["item"]:
+                                if "potion-type" in offer_data["item"]["meta"]:
+                                    item_type = offer_data["item"]["meta"]["potion-type"]
+                                    item_index = item_type
+                                else:
+                                    own_name = offer_data["item"]["meta"]["display-name"]
+                                    item_index = own_name
+                            elif "components" in offer_data["item"]:
+                                item_type = offer_data["item"]["components"]["minecraft:potion_contents"].replace("minecraft:", "", 1)
                                 item_index = item_type
-                            else:
-                                own_name = offer_data["item"]["meta"]["display-name"]
-                                item_index = own_name
 
-                        elif item_type == "ENCHANTED_BOOK":
-                            item_type = (
-                                "ENCHANTED_BOOK_"
-                                + list(offer_data["item"]["meta"]["stored-enchants"])[0]
-                            )
-                            item_index = item_type
+
+                        elif item_type == "enchanted_book":
+                            if "meta" in offer_data["item"]:
+                                item_type = (
+                                    "enchanted_book_"
+                                    + list(offer_data["item"]["meta"]["stored-enchants"])[0]
+                                )
+                                item_index = item_type
+                            elif "components" in offer_data["item"]:
+                                item_type = offer_data["item"]["components"]["minecraft:stored_enchantments"]
+                                item_index = item_type
 
                         if (
                             "meta" in offer_data["item"]
@@ -316,7 +325,7 @@ if __name__ == "__main__":
                             or BEST_DEMANDS[player_demand["item"]]
                             < player_demand["unit_price"]
                         ):
-                            BEST_DEMANDS[player_demand["item"]] = player_demand[
+                            BEST_DEMANDS[player_demand["item"].lower()] = player_demand[
                                 "unit_price"
                             ]
 
@@ -326,8 +335,8 @@ if __name__ == "__main__":
                 for stock in result_dict[shop]["storage"]:
 
                     try:
-                        item_type = stock["type"]
-                        item_index = stock["type"]
+                        item_type = stock["type"].lower()
+                        item_index = stock["type"].lower()
                     except:
                         try:
                             item_type = stock["id"]
@@ -336,7 +345,7 @@ if __name__ == "__main__":
                             print("Error parsing stock type")
                             continue
 
-                    if item_type == "POTION":
+                    if item_type == "potion":
                         if "potion-type" in stock["meta"]:
                             item_type = stock["meta"]["potion-type"]
                             item_index = item_type
@@ -344,9 +353,9 @@ if __name__ == "__main__":
                             own_name = stock["item"]["display-name"]
                             item_index = own_name
 
-                    elif item_type == "ENCHANTED_BOOK":
+                    elif item_type == "enchanted_book":
                         item_type = (
-                            "ENCHANTED_BOOK_"
+                            "enchanted_book_"
                             + list(stock["meta"]["stored-enchants"])[0]
                         )
                         item_index = item_type
@@ -375,7 +384,7 @@ if __name__ == "__main__":
                 # Transfer stock levels to offers and demands
                 for stock_key in player_stocks:
                     if stock_key in player_offers:
-                        best_offers_key = player_offers[stock_key]["item"]
+                        best_offers_key = player_offers[stock_key]["item"].lower()
                         player_offers[stock_key]["stock"] = player_stocks[stock_key]
                         discounted_unitprice = player_offers[stock_key][
                             "unit_price"
@@ -399,8 +408,10 @@ if __name__ == "__main__":
                         if player_demands[stock_key]["buy_limit"] < 0:
                             player_demands[stock_key]["buy_limit"] = 0
 
-            player_shop["offers"] = player_offers
-            player_shop["demands"] = player_demands
+            # make all keys lower case
+            player_shop["offers"] = {key.lower().replace("minecraft:", "", 1): value for key, value in player_offers.items()}
+            player_shop["demands"] = {key.lower().replace("minecraft:", "", 1): value for key, value in player_demands.items()}
+
             player_shops["shops"].append(player_shop)
             player_shops["meta"]["latestfilemoddate"] = LATEST_FILEMODDATE
             player_shops["meta"][
@@ -410,25 +421,29 @@ if __name__ == "__main__":
         # determine best-prices
         for shop in player_shops["shops"]:
             for offer_key in shop["offers"]:
-                discounted_unitprice = shop["offers"][offer_key]["unit_price"] * (
-                    1 - (shop["offers"][offer_key]["price_discount"] / 100)
-                )
-                best_offers_key = shop["offers"][offer_key]["item"]
-                if (
-                    (
-                        shop["shop_type"] == "ADMIN"
-                        or shop["offers"][offer_key]["stock"] > 0
+                try:
+                    discounted_unitprice = shop["offers"][offer_key]["unit_price"] * (
+                        1 - (shop["offers"][offer_key]["price_discount"] / 100)
                     )
-                    and best_offers_key in BEST_OFFERS
-                    and discounted_unitprice == BEST_OFFERS[best_offers_key]
-                ):
-                    shop["offers"][offer_key]["is_best_price"] = True
-                else:
-                    shop["offers"][offer_key]["is_best_price"] = False
+                    best_offers_key = shop["offers"][offer_key]["item"].lower()
+                    if (
+                        (
+                            shop["shop_type"] == "ADMIN"
+                            or shop["offers"][offer_key]["stock"] > 0
+                        )
+                        and best_offers_key in BEST_OFFERS
+                        and discounted_unitprice == BEST_OFFERS[best_offers_key]
+                    ):
+                        shop["offers"][offer_key]["is_best_price"] = True
+                    else:
+                        shop["offers"][offer_key]["is_best_price"] = False
+                except Exception as e:
+                    print(f"Error: {e}")
+                    continue
 
             for demand_key in shop["demands"]:
                 try:
-                    best_demands_key = shop["demands"][demand_key]["item"]
+                    best_demands_key = shop["demands"][demand_key]["item"].lower()
                     if (
                         shop["demands"][best_demands_key]["unit_price"]
                         == BEST_DEMANDS[best_demands_key]
@@ -436,8 +451,8 @@ if __name__ == "__main__":
                         shop["demands"][best_demands_key]["is_best_price"] = True
                     else:
                         shop["demands"][best_demands_key]["is_best_price"] = False
-                except:
-                    print("Error: ")
+                except Exception as e:
+                    print(f"Error: {e}")
                     continue
 
         # Data output as JSON file
